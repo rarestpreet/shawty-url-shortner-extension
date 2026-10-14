@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shawty URL Shortener</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="popup-container">
+    <!-- Header -->
+    <header class="header">
+      <div class="brand">
+        <img src="../icons/icon32.png" alt="Shawty Logo" class="brand-logo-img">
+        <div class="brand-info">
+          <h1>Shawty</h1>
+          <span class="subtext">Auto Link Shortener</span>
+        </div>
+      </div>
+      <div class="header-actions">
+        <span id="backend-status-badge" class="status-badge checking" title="Checking backend connection...">
+          <span class="status-dot"></span>
+          <span id="backend-status-text">Checking</span>
+        </span>
+        <button type="button" id="settings-toggle-btn" class="icon-btn" title="Settings">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Settings Drawer (Collapsible) -->
+    <div id="settings-panel" class="settings-panel hidden">
+      <div class="settings-header">
+        <h3>Extension Settings</h3>
+        <button type="button" id="close-settings-btn" class="close-btn">&times;</button>
+      </div>
+      <div class="setting-item">
+        <label for="auto-shorten-toggle" class="toggle-label">
+          <span>Auto-detect copied URLs (≥ 35 chars)</span>
+          <input type="checkbox" id="auto-shorten-toggle" checked>
+          <span class="toggle-switch"></span>
+        </label>
+      </div>
+      <div class="setting-item">
+        <label for="account-username-input" class="field-label">GitHub Account (Cloud Sync)</label>
+        <div class="input-with-button">
+          <input type="text" id="account-username-input" placeholder="GitHub username (e.g. octocat)">
+          <button type="button" id="save-username-btn" class="btn-sm">Connect</button>
+        </div>
+        <p class="account-redirect-hint" style="font-size: 0.72rem; color: #a1a1aa; margin-top: 0.35rem;">
+          Guest users get 10 URLs / 1 day. Connect GitHub account for unlimited links and cloud sync. <a href="#" id="open-signup-link" style="color: #60a5fa; text-decoration: underline;">Open Shawty Web</a>
+        </p>
+      </div>
+      <div class="setting-actions">
+        <button type="button" id="clear-history-btn" class="btn-danger-ghost">Clear URL History</button>
+      </div>
+    </div>
+
+    <!-- Segmented Navigation (Page 1: Shorten, Page 2: Recent Links) -->
+    <nav class="popup-tabs" role="tablist">
+      <button type="button" class="tab-pill active" id="tab-shorten-btn" role="tab" aria-selected="true" data-tab="0">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+          <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+        </svg>
+        <span>Shorten</span>
+      </button>
+      <button type="button" class="tab-pill" id="tab-history-btn" role="tab" aria-selected="false" data-tab="1">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+        <span>Recent Links</span>
+        <span id="tab-history-badge" class="tab-counter">0</span>
+      </button>
+      <div class="tab-slider" id="tab-slider"></div>
+    </nav>
+
+    <!-- Swipeable Views Carousel -->
+    <div class="carousel-viewport" id="carousel-viewport">
+      <div class="carousel-track" id="carousel-track">
+        
+        <!-- ================= PAGE 1: SHORTEN LINK ================= -->
+        <div class="carousel-page" id="page-shorten">
+          <!-- Manual Shorten Input -->
+          <section class="card manual-card">
+            <form id="manual-form">
+              <div class="input-group">
+                <input
+                  type="url"
+                  id="manual-url-input"
+                  class="manual-input"
+                  placeholder="Paste URL to shorten (≥ 35 chars)..."
+                  required
+                  autocomplete="off"
+                >
+                <button type="submit" id="manual-shorten-btn" class="btn-primary">
+                  <span>Shorten</span>
+                </button>
+              </div>
+              <div class="quota-info-row" id="quota-info-row">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="16" x2="12" y2="12"></line>
+                  <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
+                <span id="quota-text">Guest users get 10 URLs / 1 day</span>
+              </div>
+            </form>
+          </section>
+
+          <!-- Latest Shortened Link Card -->
+          <section id="latest-card" class="card latest-card hidden">
+            <div class="card-header">
+              <div class="card-header-left">
+                <span class="badge-accent">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  Shortened
+                </span>
+                <span id="latest-source-badge" class="source-badge">Page Copy</span>
+              </div>
+              <span id="latest-time" class="timestamp">Just now</span>
+            </div>
+
+            <div class="short-url-box">
+              <a href="#" id="latest-short-link" target="_blank" rel="noopener noreferrer" class="short-link-text">https://shwt.io/...</a>
+              <button type="button" id="copy-latest-btn" class="btn-copy" title="Copy shortened URL">
+                <svg class="copy-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+                <span id="copy-latest-text">Copy</span>
+              </button>
+            </div>
+
+            <div class="url-meta">
+              <div class="meta-field">
+                <span class="meta-label">Target:</span>
+                <span id="latest-original-url" class="meta-value truncate" title=""></span>
+              </div>
+              <div class="meta-field">
+                <span class="meta-label">Expires:</span>
+                <span id="latest-expiry" class="meta-value badge-pill">3 days / rolling</span>
+              </div>
+            </div>
+          </section>
+
+          <!-- Auto-Detection Status Info Card -->
+          <div class="info-card">
+            <div class="info-dot online"></div>
+            <div class="info-text">
+              <span>Auto-interception active (≥ 35 chars). Guest users get 10 URLs / 1 day.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================= PAGE 2: RECENT LINKS ================= -->
+        <div class="carousel-page" id="page-history">
+          <section class="card history-card">
+            <div class="section-title-row">
+              <h2>Recent Links</h2>
+              <span id="history-count" class="count-badge">0</span>
+            </div>
+
+            <div id="history-empty" class="empty-state">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="1.5">
+                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+              </svg>
+              <p>No shortened links yet</p>
+              <span>Links you shorten or copy will appear here.</span>
+            </div>
+
+            <div id="history-list" class="history-list hidden">
+              <!-- Rendered dynamically -->
+            </div>
+          </section>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">
+      <span id="toast-message">Copied!</span>
+    </div>
+  </div>
+
+  <script type="module" src="popup.js"></script>
+</body>
+</html>
