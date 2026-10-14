@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="icons/Shawty_Banner.png" alt="Shawty Banner" width="100%">
+</p>
+
 # ⚡ Shawty URL Shortener - Chrome Extension (Manifest V3)
 
 [![GitHub Stars](https://img.shields.io/badge/GitHub-Star%20Repo-blue?logo=github&style=for-the-badge)](https://github.com)
@@ -5,7 +9,7 @@
 [![Manifest V3](https://img.shields.io/badge/Chrome%20Extension-Manifest%20V3-success?style=for-the-badge&logo=googlechrome)](manifest.json)
 [![License: MIT](https://img.shields.io/badge/License-MIT-purple?style=for-the-badge)](LICENSE)
 
-A privacy-focused, intelligent **Chrome Extension (Manifest V3)** that automatically detects qualifying long URLs copied across webpages or the clipboard, validates and deduplicates them in a unified pipeline, and generates instant short links via the **Shawty** backend.
+A privacy-focused, intelligent **Chrome Extension (Manifest V3)** that can detect copied long URLs and shorten them without manual intervention via the **Shawty** backend.
 
 ---
 
@@ -23,16 +27,15 @@ If you find Shawty helpful or use it in your daily browsing:
 
 ## ✨ Features
 
-- **Automated Copy Interception**: Automatically detects qualifying URLs ($\ge 35$ characters) when you copy text on any webpage.
-- **Background Clipboard Watcher**: Uses Chrome Manifest V3 `offscreen` document to periodically check clipboard text without interrupting your workflow.
+- **Automatic Copy Detection**: Detects copied qualifying URLs ($\ge 35$ characters) and shortens them seamlessly without manual intervention.
 - **100% Privacy-Preserving**:
   - Non-URLs are discarded immediately in memory.
-  - Zero arbitrary clipboard text is ever sent to the server or persisted to storage.
+  - Zero arbitrary copied text is ever sent to the server or persisted to storage.
   - **Never automatically overwrites your clipboard** — user retains full control with explicit 1-click **Copy** buttons.
 - **Context Menus**: Right-click any hyperlink, selected text, or page background to shorten immediately.
 - **Two-View Segmented Carousel UI**:
   - **Shorten View**: Manual input with URL validation, quota indicators, and recent shortened link card.
-  - **Recent Links View**: History of your last 25 shortened links with source attribution tags (`[Page Copy]`, `[Clipboard]`, `[Manual Input]`, `[Context Menu]`).
+  - **Recent Links View**: History of your last 25 shortened links with source attribution tags (`[Page Copy]`, `[Manual Input]`, `[Context Menu]`).
 - **Quota & Tier System**:
   - **Guest Tier**: **10 URLs / 1 day** with automatic `X-Guest-ID` tracking.
   - **Connected Account Tier**: **Unlimited URLs** + cloud link synchronization.
@@ -47,16 +50,16 @@ The extension communicates with the Shawty Shortener API backend. You can find t
 
 | Environment | Endpoint URL | Status Check |
 | :--- | :--- | :--- |
-| **Official Production API** | `https://shawty.hopto.org` | [`https://shawty.hopto.org/api/health`](https://shawty.hopto.org/api/health) |
-| **Official Web Frontend** | `https://shawty.hopto.org` | Open in browser to manage cloud links or sign up |
+| **Official Production API** *(not deployed yet)* | `https://shawty.hopto.org` | [`https://shawty.hopto.org/api/health`](https://shawty.hopto.org/api/health) |
+| **Official Web Frontend** *(not deployed yet)* | `https://shawty.hopto.org` | Open in browser to manage cloud links or sign up |
 | **Local Development** | `http://localhost:8080` | Local Go/Node/Express Shawty server |
 
 ### Where to Find the Working `BASE_URL`:
-1. **In `.env.example`**: The `.env.example` file in the root of this extension contains the latest verified public production URL:
+1. **In `.env.example`**: The `.env.example` file in the root of this extension contains the official production endpoint *(not deployed yet)*:
    ```env
    BASE_URL=https://shawty.hopto.org
    ```
-2. **In [utils/storage.js](utils/storage.js)**: The fallback default is declared as:
+2. **In [utils/storage.js](utils/storage.js)**: The fallback default is declared as *(not deployed yet)*:
    ```javascript
    export const DEFAULT_API_BASE = 'https://shawty.hopto.org';
    ```
@@ -78,15 +81,15 @@ cp .env.example .env
 
 Open `.env` in your editor:
 ```env
-# Set to the official backend or your self-hosted server
-BASE_URL=https://shawty.hopto.org
+# Set to your backend URL (e.g., http://localhost:8080 for local development)
+BASE_URL=http://localhost:8080
 ```
 
 > **How `BASE_URL` Resolution Works (Order of Priority):**
 > 1. Custom API Base URL configured in extension storage (if set).
 > 2. `BASE_URL` defined in `.env`.
 > 3. `BASE_URL` defined in `.env.example`.
-> 4. Hardcoded fallback default (`https://shawty.hopto.org`).
+> 4. Hardcoded fallback default (`https://shawty.hopto.org` — *not deployed yet*).
 
 ---
 
@@ -126,15 +129,9 @@ Click the Puzzle icon in your browser toolbar and pin **Shawty** for 1-click acc
 All intake channels converge into a centralized pipeline:
 
 ```
-Candidate Input (Copy Event / Clipboard Watcher / Context Menu / Manual Form)
+Candidate Input (Copied URL / Context Menu / Manual Form)
                               ↓
-                      Normalize & Trim
-                              ↓
-             Validate URL (isValidLongUrl, min length ≥ 35)
-                              ↓
-                 Verify Protocol (http: / https:)
-                              ↓
-          Deduplicate recently processed URLs (5s window)
+             Validate URL (min length ≥ 35 chars)
                               ↓
                    Call Shawty API (POST /api/shorten)
                   [Attaches X-Guest-ID or Bearer Token]
@@ -161,32 +158,15 @@ Candidate Input (Copy Event / Clipboard Watcher / Context Menu / Manual Form)
 
 ```
 url-shortner-extension/
-├── .env.example                 # Default environment template (BASE_URL)
-├── .env                         # Local environment configuration (git-ignored)
-├── manifest.json                # Manifest V3 extension configuration
-├── background/
-│   └── service-worker.js        # Background coordinator, notifications & pipeline executor
-├── content/
-│   ├── content.js               # Flow 1: Webpage copy event listener (ISOLATED world)
-│   └── page-script.js           # Supplementary page hooks (MAIN world)
-├── offscreen/
-│   ├── offscreen.html           # Offscreen DOM wrapper for clipboard permission
-│   └── offscreen.js             # Flow 2: Periodic clipboard observer & privacy filter
-├── popup/
-│   ├── popup.html               # Popup UI (Shorten & Recent Links carousel)
-│   ├── popup.css                # Dark minimalist styling & responsive layout
-│   └── popup.js                 # Popup state management, clipboard & account sync
-├── services/
-│   ├── shortening-api.js        # API client (shortenUrl, verifyUser, syncCloudLinks)
-│   └── url-validator.js         # URL validation, length thresholds & blacklist filters
-├── utils/
-│   ├── deduplication.js         # In-memory deduplicator (5s window)
-│   └── storage.js               # chrome.storage.local wrapper, guestId & BASE_URL loader
-└── icons/
-    ├── icon16.png               # Toolbar & context menu icon
-    ├── icon32.png               # High-DPI standard display icon
-    ├── icon48.png               # Extension manager icon
-    └── icon128.png              # Chrome Web Store & notification icon
+├── background/       # Central background service worker, lifecycle & desktop notifications
+├── content/          # Content scripts for webpage copy event detection
+├── offscreen/        # Offscreen document handling background operations
+├── popup/            # Extension UI (Shorten & Recent Links views, styling & state)
+├── services/         # API client & URL validation services
+├── utils/            # Storage, state management & deduplication utilities
+├── icons/            # Extension branding, badges & promotional assets
+├── manifest.json     # Manifest V3 extension configuration
+└── .env.example      # Environment variables template
 ```
 
 ---
@@ -198,8 +178,8 @@ url-shortner-extension/
 | `storage` | Stores user preferences, local link history, and authentication session token. |
 | `notifications` | Displays desktop alerts when links are shortened or when rate limits (429) are reached. |
 | `contextMenus` | Adds right-click options ("Shorten this link with Shawty"). |
-| `clipboardRead` | Allows the offscreen document to monitor copied URLs in the background. |
-| `offscreen` | Grants access to an offscreen DOM context required for clipboard access in Manifest V3. |
+| `clipboardRead` | Allows background detection of copied URLs. |
+| `offscreen` | Grants access to an offscreen DOM context required for background operations in Manifest V3. |
 
 ---
 
