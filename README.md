@@ -67,60 +67,63 @@ The extension communicates with the Shawty Shortener API backend. You can find t
 
 ---
 
-## 🛠️ Setup & Configuration
+## 🚀 How to Install (Under 60 Seconds)
 
-The extension automatically reads configuration from `.env` inside the extension directory.
+Works on all modern Chromium browsers: **Google Chrome**, **Brave**, **Microsoft Edge**, **Vivaldi**, and **Arc**.
 
-### 1. Configure the Backend URL
-Create your `.env` file from the provided example:
-
-```bash
-# In the extension root directory
-cp .env.example .env
-```
-
-Open `.env` in your editor:
-```env
-# Set to your backend URL (e.g., http://localhost:8080 for local development)
-BASE_URL=http://localhost:8080
-```
-
-> **How `BASE_URL` Resolution Works (Order of Priority):**
-> 1. Custom API Base URL configured in extension storage (if set).
-> 2. `BASE_URL` defined in `.env`.
-> 3. `BASE_URL` defined in `.env.example`.
-> 4. Hardcoded fallback default (`https://shawty.hopto.org` — *not deployed yet*).
+> 💡 **Zero Tool Installation Required!**  
+> You do **not** need Node.js, Python, Git, or even a GitHub account. The extension is pure, lightweight JavaScript that runs natively in your browser.
 
 ---
 
-## 🚀 How to Install
+### 🟢 Method 1: For Everyone (No Coding / No Terminal Needed)
 
-Works on all modern Chromium-based browsers, including **Google Chrome**, **Brave**, **Microsoft Edge**, **Vivaldi**, and **Arc**.
+1. **Download the Extension**:
+   - Click the green **`<> Code`** button at the top-right of this GitHub page and select **`Download ZIP`**.
+   - Extract (unzip) the downloaded `.zip` file on your computer.
 
-### Step 1: Clone or Download the Repository
+2. **Open Extensions in Your Browser**:
+   - In your browser address bar, navigate to:
+     - **Chrome / Brave**: `chrome://extensions`
+     - **Edge**: `edge://extensions`
+   - Toggle **ON** the **Developer mode** switch in the top-right corner.
+
+3. **Load the Extension**:
+   - Click the **`Load unpacked`** button in the top-left corner.
+   - Select the unzipped folder (the folder containing `manifest.json`).
+
+4. **Pin & Start Shortening!**:
+   - Click the 🧩 **Extensions puzzle icon** in your browser toolbar and click the **Pin (📌)** icon next to **Shawty**.
+   - That's it! Copy any link on any website (≥ 35 chars) or click the popup icon to shorten instantly.
+
+---
+
+### 💻 Method 2: For Developers (Git & Custom Backend)
+
 ```bash
-git clone https://github.com/your-username/url-shortner-extension.git
-cd url-shortner-extension
-```
+# 1. Clone the repository
+git clone https://github.com/rarestpreet/shawty-url-shortner-extension.git
+cd shawty-url-shortner-extension
 
-### Step 2: Setup Environment
-Ensure your `.env` file is present in the extension root:
-```bash
+# 2. (Optional) If developing against local backend, create .env
 cp .env.example .env
+# By default, .env targets http://localhost:8080
 ```
 
-### Step 3: Load into Your Browser
-1. Open your browser and navigate to the Extensions page:
-   - **Chrome**: `chrome://extensions/`
-   - **Brave**: `brave://extensions/`
-   - **Edge**: `edge://extensions/`
-2. Enable **Developer mode** (toggle in the top-right corner).
-3. Click the **Load unpacked** button in the top-left corner.
-4. Select the directory containing `manifest.json` (this repository's root folder).
-5. The **Shawty** extension card will appear in your extensions list!
+3. Open `chrome://extensions`, enable **Developer mode**, and click **`Load unpacked`** pointing to this directory.
 
-### Step 4: Pin to Toolbar
-Click the Puzzle icon in your browser toolbar and pin **Shawty** for 1-click access to your shortened links and history.
+---
+
+## ⚙️ Backend Connection & Configuration
+
+The extension is designed to **work seamlessly out-of-the-box**:
+- **Zero Configuration Needed**: If `.env` is omitted, the extension automatically connects to the official hosted backend (`https://shawty.hopto.org`).
+- **Local Development**: If you are hosting the backend locally, ensure your `.env` contains:
+  ```env
+  BASE_URL=http://localhost:8080
+  ```
+- **Live Status Indicator**:
+  - The badge at the top-right of the popup displays a green **Online** dot when connected, or red **Offline** if unreachable. Hovering over the badge shows the exact URL in use.
 
 ---
 
