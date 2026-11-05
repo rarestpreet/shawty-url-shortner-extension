@@ -13,12 +13,14 @@ async function tryFetchShorten(endpoint, payload) {
     'Content-Type': 'application/json',
     Accept: 'application/json',
   };
-  const guestId = await getGuestId();
-  if (guestId) {
-    headers['X-Guest-ID'] = guestId;
-  }
   if (sessionToken) {
+    // Authenticated: never send a guest identity
     headers['Authorization'] = `Bearer ${sessionToken}`;
+  } else {
+    const guestId = await getGuestId();
+    if (guestId) {
+      headers['X-Guest-ID'] = guestId;
+    }
   }
 
   try {

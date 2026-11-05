@@ -182,6 +182,8 @@ export async function getSessionToken() {
  */
 export async function setSessionToken(token) {
   await chrome.storage.local.set({ sessionToken: token || '' });
+  // Authenticated users must not keep a guest identity
+  if (token) await chrome.storage.local.remove('guestId');
   return token || '';
 }
 
